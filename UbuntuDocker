@@ -1,0 +1,121 @@
+#########################
+# Useful command lines.
+#########################
+#### To build this image
+## docker build -f UbuntuDocker -t exercism_image .
+#### To run the built image
+## docker run -it --rm --name exercism -v <localpath_to_exercism_source>:/exercism exercism_image
+##  -it                                         : interactive move (keep the command line available)
+##  --rm                                        : on exit, remove the running app.
+##  --name                                      : The name of the app.
+##  -v <localpath_to_exercism_source>:/exercism : Mount your local path to exercism files to the linux path /exercism
+#### Check that the apps are installed
+## java -version
+## gradle -version
+## sbt --version
+## dotnet --info
+
+
+
+FROM ubuntu:latest AS base
+RUN apt update
+RUN apt-get -y install wget
+RUN apt-get -y install bzip2
+RUN apt-get -y install tar
+
+## Exercism related install
+## Personally, I never used it, I prefer to have exercim on my local machine, not in the docker image.
+## If someone decide to take that approach, let me know if it is working ;)
+#RUN wget --no-check-certificate -S -T 60 -t 3 -O exercism-3.0.13-linux-x86_64.tar.gz https://github.com/exercism/cli/releases/download/v3.0.13/exercism-3.0.13-linux-x86_64.tar.gz
+#RUN tar -xf exercism-3.0.13-linux-x86_64.tar.gz
+#RUN mkdir -p ~/bin
+#RUN mv exercism ~/bin
+#RUN export PATH="/root/bin:$PATH"
+#RUN ~/bin/exercism configure --token=xxxxxx
+
+#########################
+# Java & Gradle related install
+# https://exercism.org/docs/tracks/java/installation
+#########################
+RUN apt-get -y update
+RUN apt-get -y install software-properties-common
+RUN add-apt-repository ppa:openjdk-r/ppa
+RUN apt-get update
+RUN apt-get -y install openjdk-11-jdk
+# Install Gradle
+RUN add-apt-repository ppa:cwchien/gradle
+RUN apt-get update
+RUN apt-get -y install gradle
+
+#########################
+# Scala related install
+# https://exercism.org/docs/tracks/scala/installation
+#########################
+RUN apt-get -y install curl
+RUN echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | tee /etc/apt/sources.list.d/sbt.list
+RUN echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee /etc/apt/sources.list.d/sbt_old.list
+RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | apt-key add
+RUN apt-get update
+RUN apt-get -y install sbt
+
+#########################
+# .NET C# related install
+# https://exercism.org/docs/tracks/csharp/installation
+#########################
+RUN wget https://packages.microsoft.com/config/ubuntu/21.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+RUN dpkg -i packages-microsoft-prod.deb
+RUN rm packages-microsoft-prod.deb
+ 
+RUN apt-get update; \
+  apt-get install -y apt-transport-https && \
+  apt-get update && \
+  apt-get install -y dotnet-sdk-6.0
+
+#########################
+## Python related install
+#########################
+#RUN wget --no-check-certificate -S -T 60 -t 3 -O Miniconda3-4.5.11-Linux-x86_64.sh  https://repo.continuum.io/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh
+#RUN chmod 775 ./Miniconda3-4.5.11-Linux-x86_64.sh
+#RUN ./Miniconda3-4.5.11-Linux-x86_64.sh -b
+#RUN /root/miniconda3/bin/conda install -y pandas==0.24.2
+#RUN /root/miniconda3/bin/conda config --append channels conda-forge
+#RUN /root/miniconda3/bin/conda install -y python-json-logger==0.1.10
+#RUN /root/miniconda3/bin/conda install -y pytest
+
+#########################
+## Go related install
+#########################
+#RUN wget https://golang.org/dl/go1.16.linux-amd64.tar.gz
+#RUN tar -C /usr/local -xzf go1.16.linux-amd64.tar.gz
+#
+## Haskell related install
+#RUN wget -qO- https://get.haskellstack.org/ | sh
+#
+## :==> Return error code 1, break docker build. The | echo $? will make sure that the line will return the code 0.
+#RUN stack ghc | echo $?
+
+#########################
+## Prolog related install
+#########################
+#RUN DEBIAN_FRONTEND=noninteractive apt-get -y install software-properties-common
+#RUN apt-add-repository ppa:swi-prolog/stable -y
+#RUN apt-get update
+#RUN apt-get -y install swi-prolog
+
+#########################
+## TypeScript related install
+#########################
+#RUN apt-get -y install npm
+#RUN npm install --global yarn | echo $?
+#RUN /usr/local/lib/node_modules/yarn/bin/yarn install
+
+#########################
+## Ruby related install
+#########################
+#RUN apt-get -y install ruby-full
+#RUN gem install minitest
+#FROM base AS final
+#ENV PATH="${PATH}:/root/miniconda3/bin:/root/bin:/usr/local/go/bin:/root/.local/bin:/usr/local/bin:/usr/local/lib/node_modules/yarn/bin"
+
+
+WORKDIR /exercism
